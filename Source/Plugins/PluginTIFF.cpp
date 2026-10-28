@@ -1705,7 +1705,11 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 				const unsigned Bpc = dibBpp / chCount;
 				const unsigned srcBpp = bitspersample * samplesperpixel / 8;
 
-				assert(Bpc <= 2); //< CMYK is only uint8_t or SHORT 
+				// CMYK is only uint8_t or SHORT; a file can still select a wider DIB type
+				// (3 x half float is loaded as RGBF, Bpc is 4), so reject it instead of asserting
+				if (Bpc > 2) {
+					throw "Unsupported number of samples or bits per sample";
+				}
 
 				
 				// In the tiff file the lines are save from up to down 
